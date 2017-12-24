@@ -1,6 +1,5 @@
 (function(win, doc) {
   'use strict';
-
   /*
   Vamos estruturar um pequeno app utilizando módulos.
   Nosso APP vai ser um cadastro de carros. Vamos fazê-lo por partes.
@@ -35,7 +34,6 @@
   E aqui nesse arquivo, faça a lógica para cadastrar os carros, em um módulo
   que será nomeado de "app".
   */
-
   function app(){
     var $companyElement = new DOM('[data-js="company"]');
     var $phoneElement = new DOM('[data-js="phone"]');
