@@ -1,6 +1,5 @@
 (function(win, doc) {
   'use strict';
-
   /*
   Vamos estruturar um pequeno app utilizando módulos.
   Nosso APP vai ser um cadastro de carros. Vamos fazê-lo por partes.
@@ -35,7 +34,6 @@
   E aqui nesse arquivo, faça a lógica para cadastrar os carros, em um módulo
   que será nomeado de "app".
   */
-
   function app(){
     var $companyElement = new DOM('[data-js="company"]');
     var $phoneElement = new DOM('[data-js="phone"]');
@@ -50,6 +48,11 @@
     var ajax;
     var data;
     var cloneRow;
+
+    function init(){
+      cloneRow = $row.get()[0].cloneNode(true);
+      $tableTBody.get()[0].removeChild($row.get()[0]);
+    }
 
     function ajax(){
       ajax = new XMLHttpRequest();
@@ -71,17 +74,19 @@
     }
 
     function addRow(row){
-      cloneRow = row.get()[0].cloneNode(true);
+      cloneRow = $row.get()[0].cloneNode(true);
       $tableTBody.get()[0].appendChild(cloneRow);
 
       Array.prototype.forEach.call(cloneRow.children, function(column, index){
         if(index === 0){
-            column.appendChild(createImageCar());
-        }
+          column.appendChild(createImageCar());
+        } else if (index == 5)
+          ""
         else
           column.appendChild(doc.createTextNode($formCar.get()[0].children[index].value));
       });
       clearForm();
+      addEventClickRemove();
     }
 
     function createImageCar(){
@@ -105,15 +110,33 @@
       });
     }
 
+    function addEventClickRemove(){
+      var $buttonsDelete = doc.querySelectorAll('.remove');
+      removeEventClick();
+      Array.prototype.forEach.call($buttonsDelete, function(button){
+        button.addEventListener('click', function(){
+          $tableTBody.get()[0].removeChild(button.parentNode.parentNode);
+        }, false);
+      });
+    }
+
+    function removeEventClick(){
+      var $buttonsDelete = doc.querySelectorAll('.remove');
+      Array.prototype.forEach.call($buttonsDelete, function(button){
+        button.removeEventListener('click', function(){}, false);
+      });
+    }
+
     $formCar.on('submit', function(e){
       e.preventDefault();
       if (isValidateForm())
         addRow($row);
       else
         alert("Todos os campos devem ser preenchidos!")
-    })
+    });
 
     ajax();
+    init();
   }
 
   win.app = app();
