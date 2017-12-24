@@ -46,8 +46,11 @@
     var $board = new DOM('[data-js="board"]');
     var $color = new DOM('[data-js="color"]');
     var ajax;
+    var ajaxLoadData;
     var data;
     var cloneRow;
+
+    var cars;
 
     function init(){
       cloneRow = $row.get()[0].cloneNode(true);
@@ -69,29 +72,76 @@
 
     }
 
+    function loadAjaxApi(verb, url, params = null){
+      ajaxLoadData = new XMLHttpRequest();
+      ajaxLoadData.open(verb, url, true);
+      if(verb === "POST"){
+        ajaxLoadData.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        ajaxLoadData.send(params);
+      } else {
+        ajaxLoadData.send();
+      }
+      return ajaxLoadData;
+    }
+
+    function loadData(){
+      var ajax = loadAjaxApi('GET', 'http://localhost:3000/car');
+
+      ajax.addEventListener('readystatechange', function(){
+        if(isRequestOk(ajaxLoadData)){
+          cars = JSON.parse(ajaxLoadData.responseText);
+          if(cars.length > 0)
+            populateTableCar(cars);
+        }
+      });
+    }
+
+    function populateTableCar(cars){
+      cars.forEach(function(car){
+        addRow(car)
+      })
+    }
+
     function isRequestOk(ajax){
       return ajax.readyState === 4 && ajax.status === 200
     }
 
-    function addRow(row){
+    function addRow(car){
+      console.log(car);
       cloneRow = $row.get()[0].cloneNode(true);
       $tableTBody.get()[0].appendChild(cloneRow);
 
-      Array.prototype.forEach.call(cloneRow.children, function(column, index){
-        if(index === 0){
-          column.appendChild(createImageCar());
-        } else if (index == 5)
-          ""
-        else
-          column.appendChild(doc.createTextNode($formCar.get()[0].children[index].value));
-      });
+      cloneRow.children[0].appendChild(createImageCar(car.image));
+      cloneRow.children[1].appendChild(doc.createTextNode(car.brandModel));
+      cloneRow.children[2].appendChild(doc.createTextNode(car.year));
+      cloneRow.children[3].appendChild(doc.createTextNode(car.plate));
+      cloneRow.children[4].appendChild(doc.createTextNode(car.color));
       clearForm();
       addEventClickRemove();
     }
 
-    function createImageCar(){
+    function saveCar(){
+      var car = createSchemaCar();
+      var ajax = loadAjaxApi('POST', 'http://localhost:3000/car', car);
+      ajax.addEventListener('readystatechange', function(){
+        if(isRequestOk(ajaxLoadData)){
+          alert("Carro cadastrado com sucesso.");
+        }
+      });
+      loadData();
+    }
+
+    function createSchemaCar(){
+      return "image="+ $formCar.get()[0].children[0].value +
+        "&brandModel="+ $formCar.get()[0].children[1].value +
+        "&year="+ $formCar.get()[0].children[2].value +
+        "&plate="+ $formCar.get()[0].children[3].value +
+        "&color="+ $formCar.get()[0].children[4].value;
+    }
+
+    function createImageCar(src){
       var img = doc.createElement('img');
-      img.src = $formCar.get()[0].children[0].value;
+      img.src = src;
       img.width = 100;
       img.height = 100;
       return img;
@@ -130,16 +180,16 @@
     $formCar.on('submit', function(e){
       e.preventDefault();
       if (isValidateForm())
-        addRow($row);
+        saveCar();
       else
         alert("Todos os campos devem ser preenchidos!")
     });
 
     ajax();
     init();
+    loadData();
   }
 
   win.app = app();
-
 
 })(window, document);
